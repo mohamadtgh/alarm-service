@@ -1,0 +1,156 @@
+openapi: 3.0.0
+info:
+  title: CogvisAI Alarms API
+  description: API for managing alarms and visualizations from cogvisAI sensors.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+    description: dev server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Alarm:
+      type: object
+      properties:
+        id:
+          type: int64
+          format: uuid
+        sensorId:
+          type: int64
+        timestamp:
+          type: string
+          format: date-time
+        type:
+          type: string
+        visualizations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Visualization"
+    Visualization:
+      type: object
+      properties:
+        id:
+          type: int64
+        alarmId:
+          type: int64
+        imageBase64:
+          type: string
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+
+paths:
+  /auth/login:
+    post:
+      summary: Perform login and obtain token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+  /alarms:
+    post:
+      summary: Create alarm.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Alarm"
+      responses:
+        "201":
+          description: Alarm created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alarm"
+        "401":
+          description: "Unauthorized"
+    get:
+      summary: List alarms.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: Page number (default 1)
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: Items per page (default 10)
+        - in: query
+          name: sensorId
+          schema:
+            type: string
+          description: Filter by sensor id.
+        - in: query
+          name: type
+          schema:
+            type: string
+          description: Filter by alarm type.
+      responses:
+        "200":
+          description: A paginated list of alarms.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alarms:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Alarm"
+                  total:
+                    type: integer
+        "401":
+          description: "Unauthorized"
+
+  /alarms/{alarmId}:
+    get:
+      summary: get a single alarm.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: alarmId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Alarm details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alarm"
+        "401":
+          description: "Unauthorized"
