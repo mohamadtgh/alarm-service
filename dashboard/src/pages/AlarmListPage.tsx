@@ -13,13 +13,7 @@ const AlarmListPage = () => {
   const [alarms, setAlarms] = useState<Alarm[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sensors, setSensors] = useState<number[]>([]);
-  const [alarmTypes, setAlarmTypes] = useState<string[]>([]);
-  const [filters, setFilters] = useState<FilterOptions>({
-    sensorId: 0,
-    type: "",
-    dateRange: "",
-  });
+  const [filters, setFilters] = useState<FilterOptions>({});
 
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -34,7 +28,15 @@ const AlarmListPage = () => {
     const fetchAlarms = async () => {
       setLoading(true);
       try {
-        const response = await apiClient.get<Alarm[]>(`/alarms/?page=${currentPage}&pageSize=10`);
+        let apiPath = `/alarms/?page=${currentPage}&pageSize=10`;
+        if (filters.sensorId) {
+          apiPath += `&sensorId=${filters.sensorId}`;
+        }
+        if (filters.type) {
+          apiPath += `&type=${filters.type}`;
+        }
+
+        const response = await apiClient.get<Alarm[]>(apiPath);
         const { data = [], error } = response;
         if (error) {
           console.error(response.error);
@@ -50,13 +52,13 @@ const AlarmListPage = () => {
     };
 
     fetchAlarms();
-  }, [currentPage]);
+  }, [currentPage, filters]);
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Alarm Management</h1>
 
-      <FilterPanel sensors={sensors} alarmTypes={alarmTypes} onFilterChange={handleFilterChange} />
+      <FilterPanel onFilterChange={handleFilterChange} />
 
       <Card>
         <Card.Header>
@@ -66,7 +68,7 @@ const AlarmListPage = () => {
           <AlarmList alarms={alarms} loading={loading} />
         </Card.Body>
         <Card.Footer>
-          <Pagination currentPage={currentPage} totalPages={1} onPageChange={handlePageChange} />
+          <Pagination currentPage={currentPage} onPageChange={handlePageChange} />
         </Card.Footer>
       </Card>
     </div>

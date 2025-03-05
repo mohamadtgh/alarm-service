@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -33,7 +34,8 @@ func (s *APIService) AlarmsGet(ctx context.Context, page int32, pageSize int32, 
 
     if sensorId != "" {
         conditions = append(conditions, "sensorId = ?")
-        args = append(args, sensorId)
+        parsedSensorId, _ := strconv.ParseInt(sensorId, 10, 64)
+        args = append(args, parsedSensorId)
     }
     if type_ != "" {
         conditions = append(conditions, "type = ?")
@@ -50,10 +52,9 @@ func (s *APIService) AlarmsGet(ctx context.Context, page int32, pageSize int32, 
         baseQuery += " LIMIT ? OFFSET ?"
         args = append(args, pageSize, (page-1)*pageSize)
     }
-
-	
-
+   
     rows, err := db.GetDB().QueryContext(ctx, baseQuery, args...)
+    
     if err != nil {
         return openapi.Response(http.StatusInternalServerError, "serverError"), err
     }
@@ -160,7 +161,7 @@ func (s *APIService) AlarmsAlarmIdGet(ctx context.Context, alarmId string) (open
     var timestamp string
     if err := row.Scan(&alarm.Id, &alarm.SensorId, &timestamp, &alarm.Type); err != nil {
         if err == sql.ErrNoRows {
-            return openapi.Response(http.StatusNotFound, "alarmNotFound"), nil
+            return openapi.Response(http.StatusNoContent, "alarmNotFound"), nil
         }
         return openapi.Response(http.StatusInternalServerError, "serverError"), err
     }

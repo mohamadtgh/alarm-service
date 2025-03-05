@@ -1,3 +1,4 @@
+//go:generate npm run build --prefix ../../dashboard
 /*
  * CogvisAI Alarms API
  *

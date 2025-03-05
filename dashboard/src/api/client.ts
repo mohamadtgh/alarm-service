@@ -11,9 +11,9 @@ export default class APIClient {
         ...this.getHeaders(),
       });
       const responseJson = await response.json();
-      if (!response.ok) {
+      if (response.status !== 200) {
         return {
-          error: new Error("Failed to make request"),
+          error: new Error("request failed"),
         };
       }
       return {

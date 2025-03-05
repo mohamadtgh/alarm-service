@@ -1,35 +1,26 @@
 import { useState } from "react";
 import { Card, Select, Button, Input } from "@rewind-ui/core";
-import type { FilterOptions } from "../types";
+import { AlarmTypes, FilterOptions } from "../types";
 
 interface FilterPanelProps {
-  sensors: number[];
-  alarmTypes: string[];
   onFilterChange: (filters: FilterOptions) => void;
 }
 
-const FilterPanel = ({ sensors, alarmTypes, onFilterChange }: FilterPanelProps) => {
-  const [sensorFilter, setSensorFilter] = useState<number>(0);
-  const [typeFilter, setTypeFilter] = useState<string>("");
-  const [dateRange, setDateRange] = useState<string>("");
+const FilterPanel = ({ onFilterChange }: FilterPanelProps) => {
+  const [sensorFilter, setSensorFilter] = useState<number | undefined>();
+  const [typeFilter, setTypeFilter] = useState<AlarmTypes | undefined>();
 
   const handleApplyFilters = () => {
     onFilterChange({
       sensorId: sensorFilter,
       type: typeFilter,
-      dateRange,
     });
   };
 
   const handleResetFilters = () => {
-    setSensorFilter(0);
-    setTypeFilter("");
-    setDateRange("");
-    onFilterChange({
-      sensorId: 0,
-      type: "",
-      dateRange: "",
-    });
+    setSensorFilter(undefined);
+    setTypeFilter(undefined);
+    onFilterChange({});
   };
 
   return (
@@ -46,34 +37,27 @@ const FilterPanel = ({ sensors, alarmTypes, onFilterChange }: FilterPanelProps) 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Sensor</label>
-            <Select value={sensorFilter} onChange={(e) => setSensorFilter(Number(e.target.value))}>
-              <option value="">All Sensors</option>
-              {sensors.map((sensor) => (
-                <option key={sensor} value={sensor}>
-                  {sensor}
-                </option>
-              ))}
-            </Select>
+            <Input
+              type="number"
+              value={sensorFilter}
+              onChange={(e) => setSensorFilter(parseInt(e.target.value))}
+              placeholder="Sensor ID"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Alarm Type</label>
-            <Select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-              <option value="">All Types</option>
-              {alarmTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
+            <Select
+              value={typeFilter}
+              onChange={(e) => {
+                if (e.target.value === "0") setTypeFilter(undefined);
+                else setTypeFilter(e.target.value as AlarmTypes);
+              }}
+            >
+              <option value={0}>All Types</option>
+              <option value={AlarmTypes.Type1}>Type 1</option>
+              <option value={AlarmTypes.Type2}>Type 2</option>
+              <option value={AlarmTypes.Type3}>Type 3</option>
             </Select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-            <Input
-              type="date"
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              placeholder="Select date"
-            />
           </div>
         </div>
       </Card.Body>

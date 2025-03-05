@@ -1,7 +1,7 @@
 import { Table, Badge, Button } from "@rewind-ui/core";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import type { Alarm } from "../types";
+import { parseAlarmType, type Alarm } from "../types";
 
 interface AlarmListProps {
   alarms: Alarm[];
@@ -49,7 +49,7 @@ const AlarmList = ({ alarms, loading }: AlarmListProps) => {
             </Table.Td>
             <Table.Td>
               <Badge color={getAlarmTypeColor(alarm.type)} size="md">
-                {alarm.type}
+                {parseAlarmType(alarm.type)}
               </Badge>
             </Table.Td>
             <Table.Td>{alarm.sensorId}</Table.Td>
